@@ -1,0 +1,54 @@
+<div class="w-full min-h-screen md:p-12 p-6">
+  <div class="mx-auto w-full max-w-screen-lg flex flex-col gap-12">
+    <main class="w-full h-full flex flex-col items-center justify-center gap-8">
+      <h1 class="text-5xl md:text-7xl">やることリスト</h1>
+      <form
+        class="w-full max-w-xl flex items-center justify-center gap-4"
+        (ngSubmit)="addTodo()"
+      >
+        <input
+          type="text"
+          class="input input-primary input-lg md:input-xl w-full text-primary-content placeholder:text-primary-content/80"
+          placeholder="Go to bed"
+          [(ngModel)]="todo_input"
+          name="todoInput"
+        />
+        <button type="submit" class="btn btn-primary btn-lg md:btn-xl">
+          <ng-icon name="heroPaperAirplaneSolid"></ng-icon>
+        </button>
+      </form>
+    </main>
+    <section
+      class="w-full h-full flex flex-col items-center justify-center gap-4"
+    >
+      <h2 class="text-3xl md:text-4xl">Todos</h2>
+      <app-todo-item
+        *ngFor="let todo of todos; trackBy: trackById"
+        [todo]="todo"
+        (complete)="completeTodo($event)"
+        (delete)="deleteTodo($event)"
+        (edit)="editTodo($event)"
+        (cancelEdit)="cancelEdit($event)"
+        (update)="updateTodo($event)"
+      >
+      </app-todo-item>
+    </section>
+
+    <section
+      class="w-full h-full flex flex-col items-center justify-center gap-4"
+    >
+      <h2 class="text-3xl md:text-4xl text-success">Completed</h2>
+      <app-todo-item
+        *ngFor="let todo of completed_todos; trackBy: trackById"
+        [todo]="todo"
+        [completed]="true"
+        (uncomplete)="uncompleteTodo($event)"
+        (delete)="deleteTodo($event)"
+        (edit)="editTodo($event)"
+        (cancelEdit)="cancelEdit($event)"
+        (update)="updateTodo($event)"
+      >
+      </app-todo-item>
+    </section>
+  </div>
+</div>
