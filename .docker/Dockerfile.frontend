@@ -1,0 +1,28 @@
+FROM node:24-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy dependency manifests
+COPY ./pnpm-lock.yaml ./package.json ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the app source
+COPY . .
+
+# Build Angular app
+RUN pnpm build --configuration production
+
+# Stage 2: Serve with nginx
+FROM nginx:alpine
+
+# Copy the build output from the previous stage
+COPY --from=builder /app/dist/frontend /usr/share/nginx/html
+
+# Expose nginx's default port
+EXPOSE 80
