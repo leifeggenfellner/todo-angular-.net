@@ -35,7 +35,6 @@ import { Todo } from '@models/todo.model';
   ],
   imports: [CommonModule, NgIcon, FormsModule],
   templateUrl: './todo-item.component.html',
-  styleUrls: ['./todo-item.component.css'],
 })
 export class TodoItemComponent implements AfterViewChecked {
   @Input() todo!: Todo;
