@@ -1,7 +1,11 @@
 export interface Todo {
-    id: number;
-    text: string;
-    completed: boolean;
-    editing?: boolean;
-  }
-  
+  id: number;
+  title: string;
+  isCompleted: boolean;
+  editing?: boolean;
+}
+
+export interface newTodo {
+  title: string;
+  isCompleted: boolean;
+}

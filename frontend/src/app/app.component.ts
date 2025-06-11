@@ -1,10 +1,11 @@
 import { FormsModule } from '@angular/forms';
-import { Component } from '@angular/core';
-import { Todo } from '@models/todo.model';
+import { Component, inject } from '@angular/core';
+import { Todo, newTodo } from '@models/todo.model';
 import { TodoItemComponent } from '@components/display/todo-item/todo-item.component';
 import { NgFor, CommonModule } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPaperAirplaneSolid } from '@ng-icons/heroicons/solid';
+import { TodoService } from '@services/todo.service';
 
 @Component({
   selector: 'app-root',
@@ -18,74 +19,110 @@ export class AppComponent {
   title = 'frontend';
   todo_input = '';
   todo_input_pre_edit = '';
-  todos = [
-    { id: 1, text: 'Learn Angular', completed: false },
-    { id: 2, text: 'Learn TypeScript', completed: false },
-    { id: 3, text: 'Learn RxJS', completed: false },
-    { id: 4, text: 'Learn NgRx', completed: false },
-    { id: 5, text: 'Learn NgRx Store', completed: false },
-    { id: 6, text: 'Learn NgRx Effects', completed: false },
-    { id: 7, text: 'Learn NgRx Router Store', completed: false },
-  ];
+  todos: Todo[] = [];
+  completed_todos: Todo[] = [];
 
-  completed_todos = new Array<Todo>();
+  private todoService = inject(TodoService);
+
+  ngOnInit(): void {
+    this.todoService.getTodos().subscribe({
+      next: (fetchedTodos: Todo[]) => {
+        this.todos = fetchedTodos.filter((todo) => !todo.isCompleted);
+        this.completed_todos = fetchedTodos.filter((todo) => todo.isCompleted);
+      },
+      error: (error) => {
+        console.error('Error fetching todos:', error);
+      },
+    });
+  }
 
   addTodo() {
     if (this.todo_input.trim() === '') {
       return;
     }
 
-    const newTodo = {
-      id: this.todos.length + 1,
-      text: this.todo_input,
-      completed: false,
+    const newTodo: newTodo = {
+      title: this.todo_input,
+      isCompleted: false,
     };
 
-    this.todos.push(newTodo);
-    this.todo_input = '';
+    this.todoService.addTodo(newTodo).subscribe({
+      next: (todo) => {
+        this.todos.push(todo);
+        this.todo_input = '';
+      },
+      error: (error) => {
+        console.error('Error adding todo:', error);
+      },
+    });
   }
 
   deleteTodo(id: number) {
-    this.todos = this.todos.filter((todo) => todo.id !== id);
-    this.completed_todos = this.completed_todos.filter(
-      (todo) => todo.id !== id
-    );
+    this.todoService.deleteTodo(id).subscribe({
+      next: () => {
+        this.todos = this.todos.filter((todo) => todo.id !== id);
+        this.completed_todos = this.completed_todos.filter(
+          (todo) => todo.id !== id
+        );
+      },
+      error: (error) => {
+        console.error('Error deleting todo:', error);
+      },
+    });
   }
 
-  completeTodo(todo: Todo) {
-    if (todo) {
-      todo.completed = true;
-      this.completed_todos.push(todo);
-      this.todos = this.todos.filter((_todo) => _todo.id !== todo.id);
-    }
-  }
+  toggleTodoCompletion(todo: Todo) {
+    if (!todo) return;
 
-  uncompleteTodo(todo: Todo) {
-    if (todo) {
-      todo.completed = false;
-      this.todos.push(todo);
-      this.completed_todos = this.completed_todos.filter(
-        (_todo) => _todo.id !== todo.id
-      );
-    }
+    todo.isCompleted = !todo.isCompleted;
+
+    this.todoService.updateTodo(todo).subscribe({
+      next: () => {
+        if (todo.isCompleted) {
+          this.completed_todos.push(todo);
+          this.todos = this.todos.filter((t) => t.id !== todo.id);
+        } else {
+          this.todos.push(todo);
+          this.completed_todos = this.completed_todos.filter(
+            (t) => t.id !== todo.id
+          );
+        }
+      },
+      error: (error) => {
+        console.error('Error updating todo:', error);
+        todo.isCompleted = !todo.isCompleted;
+      },
+    });
   }
 
   editTodo(todo: Todo) {
-    this.todo_input_pre_edit = todo.text;
+    this.todo_input_pre_edit = todo.title;
     todo.editing = true;
   }
 
   cancelEdit(todo: Todo) {
-    todo.text = this.todo_input_pre_edit;
+    todo.title = this.todo_input_pre_edit;
     todo.editing = false;
   }
 
   updateTodo(todo: Todo) {
-    if (todo.text.trim() === '') {
+    if (todo.title.trim() === '') {
       return;
     }
 
-    todo.editing = false;
+    this.todoService.updateTodo(todo).subscribe({
+      next: () => {
+        todo.title = todo.title.trim();
+        todo.editing = false;
+        this.todo_input_pre_edit = '';
+      },
+      error: (error) => {
+        console.error('Error updating todo:', error);
+        todo.title = this.todo_input_pre_edit;
+        todo.editing = false;
+        this.todo_input_pre_edit = '';
+      },
+    });
   }
 
   trackById(index: number, item: Todo) {

@@ -42,8 +42,7 @@ export class TodoItemComponent implements AfterViewChecked {
 
   @Input() completed: boolean = false;
 
-  @Output() complete = new EventEmitter<Todo>();
-  @Output() uncomplete = new EventEmitter<Todo>();
+  @Output() toggleComplete = new EventEmitter<Todo>();
   @Output() delete = new EventEmitter<number>();
   @Output() edit = new EventEmitter<Todo>();
   @Output() cancelEdit = new EventEmitter<Todo>();
