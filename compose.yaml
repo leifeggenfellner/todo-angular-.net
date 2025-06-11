@@ -31,6 +31,12 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:80"
       ConnectionStrings__DefaultConnection: "${DB_CONNECTION_STRING}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
     ports:
       - "5000:80"
     networks:
@@ -43,7 +49,8 @@ services:
       dockerfile: ../.docker/Dockerfile.frontend
     container_name: angular_frontend
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "4200:4200"
     networks:
