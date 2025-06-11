@@ -21,7 +21,7 @@ namespace Api.Controllers
             return Ok(todos);
         }
 
-        [HttpGet("/todo/details")]
+        [HttpGet("/todo/details/{id}")]
         public async Task<IActionResult> Details(int id)
         {
             var todo = await _context.Todos.FindAsync(id);
@@ -39,7 +39,7 @@ namespace Api.Controllers
             return CreatedAtAction(nameof(Details), new { id = todo.Id }, todo);
         }
 
-        [HttpPut("/todo/edit")]
+        [HttpPut("/todo/edit/{id}")]
         public async Task<IActionResult> Edit(int id, [FromBody] TodoItem todo)
         {
             if (id != todo.Id)
@@ -54,7 +54,7 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("/todo/delete")]
+        [HttpDelete("/todo/delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.Todos.FindAsync(id);
