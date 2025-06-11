@@ -5,40 +5,42 @@ using Api.Models;
 
 namespace Api.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TodoController(AppDbContext context) : ControllerBase
+    public class TodoController : Controller
     {
-        private readonly AppDbContext _context = context;
+        private readonly AppDbContext _context;
 
-        // GET: api/todo
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public TodoController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet("/todo")]
+        public async Task<IActionResult> Index()
         {
             var todos = await _context.Todos.ToListAsync();
             return Ok(todos);
         }
 
-        // GET: api/todo/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("/todo/details")]
+        public async Task<IActionResult> Details(int id)
         {
             var todo = await _context.Todos.FindAsync(id);
             return todo != null ? Ok(todo) : NotFound();
         }
 
-        // POST: api/todo
-        [HttpPost]
+        [HttpPost("/todo/create")]
         public async Task<IActionResult> Create([FromBody] TodoItem todo)
         {
+            if (todo == null)
+                return BadRequest("Todo item cannot be null");
+
             _context.Todos.Add(todo);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = todo.Id }, todo);
+            return CreatedAtAction(nameof(Details), new { id = todo.Id }, todo);
         }
 
-        // PUT: api/todo/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] TodoItem todo)
+        [HttpPut("/todo/edit")]
+        public async Task<IActionResult> Edit(int id, [FromBody] TodoItem todo)
         {
             if (id != todo.Id)
                 return BadRequest("ID mismatch");
@@ -52,8 +54,7 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        // DELETE: api/todo/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("/todo/delete")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.Todos.FindAsync(id);
